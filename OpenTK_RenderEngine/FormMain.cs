@@ -16,6 +16,7 @@ namespace OpenTK_RenderEngine
     public partial class FormMain : Form
     {
         private Mesh _mesh;
+        private StaticShader _shader;
 
         public FormMain()
         {
@@ -25,15 +26,21 @@ namespace OpenTK_RenderEngine
         private void Form1_Load(object sender, EventArgs e)
         {
             _mesh = Mesh.CreateTriangle(0.5f);
+            _shader = new StaticShader();
         }
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             Mesh.CleanUp();
+            _shader.CleanUp();
         }
         private void glControl_Paint(object sender, PaintEventArgs e)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            _shader.Start();
             Render(_mesh);
+            _shader.Stop();
+
             glControl.SwapBuffers();
         }
 
