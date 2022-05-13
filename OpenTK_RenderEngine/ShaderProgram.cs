@@ -38,7 +38,7 @@ namespace OpenTK_RenderEngine
             GL.AttachShader(_programId, _vertShaderId);
             GL.AttachShader(_programId, _fragShaderId);
 
-            BindAttributes();
+            OnProgramAttached();
 
             // link
             GL.LinkProgram(_programId);
@@ -46,13 +46,8 @@ namespace OpenTK_RenderEngine
             GL.GetProgram(_programId, GetProgramParameterName.LinkStatus, out result);
             if (result != (int)All.True)
                 throw new Exception($"link program error: {_programId}");
-        }
 
-        protected abstract void BindAttributes();
-
-        protected void BindAttribute(int attribute, string name)
-        {
-            GL.BindAttribLocation(_programId, attribute, name);
+            OnProgramLinked();
         }
 
         private int LoadShader(string txt, ShaderType type)
@@ -71,16 +66,6 @@ namespace OpenTK_RenderEngine
             return shaderId;
         }
 
-        public void Start()
-        {
-            GL.UseProgram(_programId);
-        }
-
-        public void Stop()
-        {
-            GL.UseProgram(0);
-        }
-
         public void CleanUp()
         {
             Stop();
@@ -91,6 +76,49 @@ namespace OpenTK_RenderEngine
             GL.DeleteShader(_fragShaderId);
             // delete program
             GL.DeleteProgram(_programId);
+        }
+
+        protected abstract void OnProgramAttached();
+        protected abstract void OnProgramLinked();
+
+        protected void BindAttribute(int attribute, string name)
+        {
+            GL.BindAttribLocation(_programId, attribute, name);
+        }
+
+        public void Start()
+        {
+            GL.UseProgram(_programId);
+        }
+
+        public void Stop()
+        {
+            GL.UseProgram(0);
+        }
+
+        protected int GetUniformLocation(string name)
+        {
+            return GL.GetUniformLocation(_programId, name);
+        }
+
+        protected void SetFloat(int location, float v)
+        {
+            GL.Uniform1(location, v);
+        }
+
+        protected void SetInt(int location, int v)
+        {
+            GL.Uniform1(location++, v);
+        }
+                
+        protected void SetVector(int location, Vector3 v)
+        {
+            GL.Uniform3(location, v);
+        }
+
+        protected void SetMatrix(int location, Matrix4 m)
+        {
+            GL.UniformMatrix4(location, false, ref m);
         }
     }
 }

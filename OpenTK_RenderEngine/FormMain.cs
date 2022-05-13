@@ -17,6 +17,8 @@ namespace OpenTK_RenderEngine
     {
         private Mesh _mesh;
         private StaticShader _shader;
+        private Entity _entity;
+        private Camera _camera;
 
         public FormMain()
         {
@@ -25,12 +27,14 @@ namespace OpenTK_RenderEngine
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            _mesh = Mesh.CreateTriangle(0.5f);
             _shader = new StaticShader();
+            _entity = new Entity();
+            _entity.Mesh = Mesh.CreateCubic(0.5f);
+            _camera = new Camera();
         }
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Mesh.CleanUp();
+            Loader.CleanUp();
             _shader.CleanUp();
         }
         private void glControl_Paint(object sender, PaintEventArgs e)
@@ -38,7 +42,14 @@ namespace OpenTK_RenderEngine
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             _shader.Start();
-            Render(_mesh);
+
+            float aspect = glControl.Width * 1.0f / glControl.Height;
+            float fov = (float)(60.0f * Math.PI / 180.0f);
+            var projection = Matrix4.CreatePerspectiveFieldOfView(fov, aspect, 0.01f, 100.0f);
+            _shader.SetProjectionMatrix(projection);
+            _shader.SetViewMatrix(_camera.GetViewMatrix());
+            Render(_entity);
+
             _shader.Stop();
 
             glControl.SwapBuffers();
@@ -46,7 +57,8 @@ namespace OpenTK_RenderEngine
 
         private void timer_tick_Tick(object sender, EventArgs e)
         {
-            glControl.Update();
+            glControl.Invalidate();
+            _entity.Rotate(0.01f, 0.01f, 0);            
         }
 
         private void glControl_Resize(object sender, EventArgs e)
@@ -54,12 +66,16 @@ namespace OpenTK_RenderEngine
             glControl.MakeCurrent();
             GL.Viewport(0, 0, glControl.Width, glControl.Height);
             GL.ClearColor(Color.FromArgb(88, 88, 88));
+            GL.Enable(EnableCap.DepthTest);
         }
 
-        private void Render(Mesh mesh)
+        private void Render(Entity entity)
         {
+            Mesh mesh = entity.Mesh;
+            _shader.SetModelMatrix(entity.GetModelMatrix());
+
             // bind and enable
-            GL.BindVertexArray(mesh.VAOId());
+            GL.BindVertexArray(mesh.GetVAOId());
             GL.EnableVertexAttribArray(0);
 
             // draw triangle

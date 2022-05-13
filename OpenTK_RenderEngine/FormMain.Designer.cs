@@ -50,6 +50,7 @@
             // timer_tick
             // 
             this.timer_tick.Enabled = true;
+            this.timer_tick.Interval = 30;
             this.timer_tick.Tick += new System.EventHandler(this.timer_tick_Tick);
             // 
             // FormMain

@@ -8,7 +8,7 @@ using OpenTK.Graphics.OpenGL;
 
 namespace OpenTK_RenderEngine
 {
-    class Mesh
+    class Loader
     {
         private static List<int> vaoList = new List<int>();
         private static List<int> vboList = new List<int>();
@@ -21,7 +21,7 @@ namespace OpenTK_RenderEngine
                 GL.DeleteBuffer(id);
         }
 
-        private static int CreateBuffer(Vector3[] vertices, UInt16[] indices)
+        public static int CreateBuffer(Vector3[] vertices, UInt16[] indices)
         {
             // vertex attribute object
             int vaoId = GL.GenVertexArray();
@@ -47,7 +47,10 @@ namespace OpenTK_RenderEngine
 
             return vaoId;
         }
+    }
 
+    class Mesh
+    {
         public static Mesh CreateTriangle(float w)
         {
             float x = w / 2;
@@ -68,7 +71,50 @@ namespace OpenTK_RenderEngine
                 //2,3,0,
             };
 
-            int vaoId = CreateBuffer(vertices, indices);
+            return CreateMesh(vertices, indices);
+        }
+
+        public static Mesh CreateCubic(float w)
+        {
+            float x = w / 2;
+            float y = w / 2;
+            float z = w / 2;
+
+            var vertices = new Vector3[]
+            {
+                new Vector3(x, y, z),
+                new Vector3(-x, y, z),
+                new Vector3(-x, -y, z),
+                new Vector3(x, -y, z),
+
+                new Vector3(x, y, -z),
+                new Vector3(-x, y, -z),
+                new Vector3(-x, -y, -z),
+                new Vector3(x, -y, -z),
+            };
+
+            var indices = new UInt16[]
+            {
+                0,1,2,
+                2,3,0,
+                0,4,5,
+                5,1,0,
+                4,0,3,
+                3,7,4,
+                5,1,2,
+                2,6,5,
+                3,2,6,
+                6,7,3,
+                5,4,7,
+                7,6,5
+            };
+
+            return CreateMesh(vertices, indices);
+        }
+
+        private static Mesh CreateMesh(Vector3[] vertices, UInt16[] indices)
+        {
+            int vaoId = Loader.CreateBuffer(vertices, indices);
             return new Mesh(vaoId, vertices.Length, indices.Length);
         }
 
@@ -83,7 +129,7 @@ namespace OpenTK_RenderEngine
             _icount = icount;
         }
 
-        public int VAOId()
+        public int GetVAOId()
         {
             return _vaoId;
         }
