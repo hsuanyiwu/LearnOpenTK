@@ -29,8 +29,10 @@ namespace OpenTK_RenderEngine
         {
             _shader = new StaticShader();
             _entity = new Entity();
-            _entity.Mesh = Mesh.CreateCubic(0.5f);
+            //_entity.Mesh = Mesh.CreateCubic(0.5f);
+            _entity.Mesh = Mesh.FromObjFile(@"res/cube.obj");
             _camera = new Camera();
+            _camera.Backward(5.0f);
         }
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -39,8 +41,7 @@ namespace OpenTK_RenderEngine
         }
         private void glControl_Paint(object sender, PaintEventArgs e)
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
+            Render.Prepare();
             _shader.Start();
 
             float aspect = glControl.Width * 1.0f / glControl.Height;
@@ -48,7 +49,9 @@ namespace OpenTK_RenderEngine
             var projection = Matrix4.CreatePerspectiveFieldOfView(fov, aspect, 0.01f, 100.0f);
             _shader.SetProjectionMatrix(projection);
             _shader.SetViewMatrix(_camera.GetViewMatrix());
-            Render(_entity);
+            _shader.SetModelMatrix(_entity.GetModelMatrix());
+
+            Render.Draw(_entity);
 
             _shader.Stop();
 
@@ -67,23 +70,6 @@ namespace OpenTK_RenderEngine
             GL.Viewport(0, 0, glControl.Width, glControl.Height);
             GL.ClearColor(Color.FromArgb(88, 88, 88));
             GL.Enable(EnableCap.DepthTest);
-        }
-
-        private void Render(Entity entity)
-        {
-            Mesh mesh = entity.Mesh;
-            _shader.SetModelMatrix(entity.GetModelMatrix());
-
-            // bind and enable
-            GL.BindVertexArray(mesh.GetVAOId());
-            GL.EnableVertexAttribArray(0);
-
-            // draw triangle
-            GL.DrawElements(PrimitiveType.Triangles, mesh.IndexCount(), mesh.IndexType(), 0);
-
-            // disable and unbind
-            GL.DisableVertexAttribArray(0);
-            GL.BindVertexArray(0);
         }
     }
 

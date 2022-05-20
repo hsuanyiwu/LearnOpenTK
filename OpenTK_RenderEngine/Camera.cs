@@ -17,5 +17,20 @@ namespace OpenTK_RenderEngine
         {
             return Matrix4.LookAt(_position, _position + _front, _up);
         }
+
+        public Vector3 Position
+        {
+            get { return _position; }
+        }
+
+        public void Forward(float dx)
+        {
+            _position.Z -= dx;
+        }
+
+        public void Backward(float dx)
+        {
+            _position.Z += dx;
+        }
     }
 }

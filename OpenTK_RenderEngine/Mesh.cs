@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+using System.IO;
 
 namespace OpenTK_RenderEngine
 {
@@ -147,6 +148,77 @@ namespace OpenTK_RenderEngine
         public DrawElementsType IndexType()
         {
             return DrawElementsType.UnsignedShort;
+        }
+
+        public static Mesh FromObjFile(string file)
+        {
+            try
+            {
+                List<Vector3> vertices = new List<Vector3>();
+                List<UInt16> indices = new List<UInt16>();
+
+                List<Vector3> normal_data = new List<Vector3>();
+                Vector3[] normal;
+
+                using (var sr = new StreamReader(file))
+                {
+                    string line = "";
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if (line.StartsWith("v ")) // vertex
+                        {
+                            var f = line.Split(' ');
+                            var v = new Vector3(float.Parse(f[1]), float.Parse(f[2]), float.Parse(f[3]));
+                            vertices.Add(v);
+                        }
+                        else if (line.StartsWith("vt ")) // texture coord of vertex
+                        {
+                            var f = line.Split(' ');
+                        }
+                        else if (line.StartsWith("vn ")) // normal of vertex
+                        {
+                            var f = line.Split(' ');
+                            var v = new Vector3(float.Parse(f[1]), float.Parse(f[2]), float.Parse(f[3]));
+                            normal_data.Add(v);
+                        }
+                        else if (line.StartsWith("f ")) // face 
+                        {
+                            break;
+                        }
+                    }
+
+                    do
+                    {
+                        normal = new Vector3[vertices.Count];
+
+                        if (line.StartsWith("f ")) // f p1 p2 p3
+                        {
+                            var f = line.Split(' '); 
+                            for (int i = 0; i < 3; ++i)
+                            {
+                                var v = f[i + 1].Split('/');
+                                // vertex data position -> index
+                                int vertex_i = int.Parse(v[0]) - 1;
+                                indices.Add((UInt16)vertex_i);
+                                // texture data position
+                                int texture_i = int.Parse(v[1]) - 1;
+
+                                // normal data position
+                                int normal_i = int.Parse(v[2]) - 1;
+                                normal[vertex_i] = normal_data[normal_i];
+                            }
+                        }
+                    }
+                    while ((line = sr.ReadLine()) != null);
+                }
+
+                return CreateMesh(vertices.ToArray(), indices.ToArray());
+            }
+            catch (Exception e)
+            {
+
+            }
+            return null;
         }
     }
 }
