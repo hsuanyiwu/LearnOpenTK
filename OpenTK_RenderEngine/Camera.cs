@@ -21,6 +21,7 @@ namespace OpenTK_RenderEngine
         public Vector3 Position
         {
             get { return _position; }
+            set { _position = value; }
         }
 
         public void Forward(float dx)
@@ -31,6 +32,16 @@ namespace OpenTK_RenderEngine
         public void Backward(float dx)
         {
             _position.Z += dx;
+        }
+
+        public void MoveUp(float dist)
+        {
+            _position.Y += dist;
+        }
+
+        public void MoveDown(float dist)
+        {
+            _position.Y -= dist;
         }
     }
 }

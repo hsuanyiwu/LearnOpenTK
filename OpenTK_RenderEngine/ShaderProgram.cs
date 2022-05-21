@@ -38,6 +38,7 @@ namespace OpenTK_RenderEngine
             GL.AttachShader(_programId, _vertShaderId);
             GL.AttachShader(_programId, _fragShaderId);
 
+            // set uniform by sub class
             OnProgramAttached();
 
             // link
@@ -47,6 +48,7 @@ namespace OpenTK_RenderEngine
             if (result != (int)All.True)
                 throw new Exception($"link program error: {_programId}");
 
+            // get uniform by sub class
             OnProgramLinked();
         }
 

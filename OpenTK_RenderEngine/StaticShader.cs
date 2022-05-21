@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
+using System.Drawing;
+using OpenTK.Graphics.OpenGL;
+
 
 namespace OpenTK_RenderEngine
 {
@@ -16,7 +19,8 @@ namespace OpenTK_RenderEngine
         private int _locMatModel;
         private int _locMatView;
         private int _locMatProj;
-
+        private int _locLightPos;
+        private int _locLightColor;
 
         public StaticShader()
         {
@@ -25,13 +29,17 @@ namespace OpenTK_RenderEngine
 
         protected override void OnProgramAttached()
         {
-            BindAttribute(0, "position");            
+            BindAttribute((int)VAO_INDEX.VERTEX, "aPosition");
+            BindAttribute((int)VAO_INDEX.NORMAL, "aNormal");
         }
         protected override void OnProgramLinked()
         {
             _locMatModel = GetUniformLocation("matModel");
             _locMatView = GetUniformLocation("matView");
             _locMatProj = GetUniformLocation("matProj");
+
+            _locLightPos = GetUniformLocation("lightPos");
+            _locLightColor = GetUniformLocation("lightColor");
         }
 
         public void SetModelMatrix(Matrix4 m)
@@ -47,6 +55,14 @@ namespace OpenTK_RenderEngine
         public void SetProjectionMatrix(Matrix4 m)
         {
             SetMatrix(_locMatProj, m);
+        }
+
+        public void SetLight(Vector3 lighPos, Color color)
+        {
+            SetVector(_locLightPos, lighPos);
+            float r = 1.0f / 255.0f;
+            var clr = new Vector3(color.R * r, color.G * r, color.B * r);
+            SetVector(_locLightColor, clr);
         }
     }
 }

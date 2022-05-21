@@ -19,7 +19,7 @@ namespace OpenTK_RenderEngine
         private StaticShader _shader;
         private Entity _entity;
         private Camera _camera;
-
+        private Light _light;
         public FormMain()
         {
             InitializeComponent();
@@ -29,10 +29,20 @@ namespace OpenTK_RenderEngine
         {
             _shader = new StaticShader();
             _entity = new Entity();
+            //_entity.Mesh = Mesh.CreateTriangle(1.0f);
             //_entity.Mesh = Mesh.CreateCubic(0.5f);
-            _entity.Mesh = Mesh.FromObjFile(@"res/cube.obj");
+            //_entity.Mesh = Mesh.FromObjFile(@"res/cube.obj");
+            _entity.Mesh = Mesh.FromObjFile(@"res/dragon.obj");
+            //_entity.Rotate(0, 45, 0);
+
             _camera = new Camera();
+            //_camera.Position = new Vector3(3,3,3);
             _camera.Backward(5.0f);
+            _camera.MoveUp(2.0f);
+
+            _light = new Light();
+            _light.Position = new Vector3(20.0f,2.0f,20.0f);
+            _light.Color = Color.Orange;
         }
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -44,32 +54,30 @@ namespace OpenTK_RenderEngine
             Render.Prepare();
             _shader.Start();
 
-            float aspect = glControl.Width * 1.0f / glControl.Height;
-            float fov = (float)(60.0f * Math.PI / 180.0f);
-            var projection = Matrix4.CreatePerspectiveFieldOfView(fov, aspect, 0.01f, 100.0f);
-            _shader.SetProjectionMatrix(projection);
+            // set transform matrix
+            _shader.SetProjectionMatrix(Render.GetProjectionMatrix());
             _shader.SetViewMatrix(_camera.GetViewMatrix());
             _shader.SetModelMatrix(_entity.GetModelMatrix());
+
+            // set light
+            _shader.SetLight(_light.Position, _light.Color);
 
             Render.Draw(_entity);
 
             _shader.Stop();
-
             glControl.SwapBuffers();
         }
 
         private void timer_tick_Tick(object sender, EventArgs e)
         {
             glControl.Invalidate();
-            _entity.Rotate(0.01f, 0.01f, 0);            
+            _entity.RotateDeg(0.0f, 1.0f, 0.0f);
         }
 
         private void glControl_Resize(object sender, EventArgs e)
         {
             glControl.MakeCurrent();
-            GL.Viewport(0, 0, glControl.Width, glControl.Height);
-            GL.ClearColor(Color.FromArgb(88, 88, 88));
-            GL.Enable(EnableCap.DepthTest);
+            Render.ResizeWindow(glControl.Width, glControl.Height);
         }
     }
 

@@ -56,5 +56,13 @@ namespace OpenTK_RenderEngine
             _rotation.Y += rotY;
             _rotation.Z += rotZ;
         }
+
+        public void RotateDeg(float rotX, float rotY, float rotZ)
+        {
+            float r = (float)(Math.PI / 180.0);
+            _rotation.X += rotX * r;
+            _rotation.Y += rotY * r;
+            _rotation.Z += rotZ * r;
+        }
     }
 }
