@@ -31,6 +31,7 @@ namespace OpenTK_RenderEngine
         {
             BindAttribute((int)VAO_INDEX.VERTEX, "aPosition");
             BindAttribute((int)VAO_INDEX.NORMAL, "aNormal");
+            BindAttribute((int)VAO_INDEX.TEXTURE, "aTexCoord");
         }
         protected override void OnProgramLinked()
         {

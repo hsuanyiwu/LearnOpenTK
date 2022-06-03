@@ -2,11 +2,13 @@
 
 in vec3 Normal;
 in vec3 Position;
+in vec2 TexCoord;
 
 out vec4 Color;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
+uniform sampler2D texture0;
 
 void main(void)
 {
@@ -23,7 +25,9 @@ void main(void)
     vec3 diffuseColor = lightColor * diffuse;
 
     // result
-    vec3 result = ambientColor + diffuseColor;
-    Color = vec4(result, 1);
+    vec4 objectColor = texture(texture0, TexCoord);
+    vec4 lightStrength = vec4(ambientColor + diffuseColor, 1);
+    //Color = vec4(result, 1);
+    Color = objectColor * lightStrength;
 }
 

@@ -10,79 +10,32 @@ using System.Diagnostics;
 
 namespace OpenTK_RenderEngine
 {
-    enum VAO_INDEX
-    {
-        VERTEX = 0,
-        NORMAL = 1,
-        TEXTURE = 2,
-    }
-
-    class Loader
-    {
-        private static List<int> vaoList = new List<int>();
-        private static List<int> vboList = new List<int>();
-
-        public static void CleanUp()
-        {
-            foreach (var id in vaoList)
-                GL.DeleteVertexArray(id);
-            foreach (var id in vboList)
-                GL.DeleteBuffer(id);
-        }
-
-        public static int CreateBuffer(Vector3[] vertices, UInt16[] indices, Vector3[] normal = null, Vector2[] texture = null)
-        {
-            // vertex attribute object
-            int vaoId = GL.GenVertexArray();
-            vaoList.Add(vaoId);
-            GL.BindVertexArray(vaoId);
-
-            // store vbo data
-            StoreBufferData((int)VAO_INDEX.VERTEX, vertices);
-            if (normal != null)
-                StoreBufferData((int)VAO_INDEX.NORMAL, normal);
-            if (texture != null)
-                StoreBufferData((int)VAO_INDEX.TEXTURE, texture);
-            StoreIndexData(indices);
-
-            // unbind buffer
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
-            GL.BindVertexArray(0);
-
-            return vaoId;
-        }
-
-        private static void StoreIndexData(ushort[] indices)
-        {
-            int vboId = GL.GenBuffer();
-            vboList.Add(vboId);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, vboId);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(UInt16), indices, BufferUsageHint.StaticDraw);
-        }
-
-        private static void StoreBufferData(int index, Vector3[] data)
-        {
-            int vboId = GL.GenBuffer();
-            vboList.Add(vboId);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vboId);
-            GL.BufferData(BufferTarget.ArrayBuffer, data.Length * Vector3.SizeInBytes, data, BufferUsageHint.StaticDraw);
-            GL.VertexAttribPointer(index, 3, VertexAttribPointerType.Float, false, 0, 0);
-        }
-
-        private static void StoreBufferData(int index, Vector2[] data)
-        {
-            int vboId = GL.GenBuffer();
-            vboList.Add(vboId);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vboId);
-            GL.BufferData(BufferTarget.ArrayBuffer, data.Length * Vector2.SizeInBytes, data, BufferUsageHint.StaticDraw);
-            GL.VertexAttribPointer(index, 3, VertexAttribPointerType.Float, false, 0, 0);
-        }
-
-    }
-
     class Mesh
     {
+        private int _vaoId;
+        private int _icount;
+
+        private Mesh(int vaoId, int icount)
+        {
+            _vaoId = vaoId;
+            _icount = icount;
+        }
+
+        public int GetVAOId()
+        {
+            return _vaoId;
+        }
+
+        public int IndexCount()
+        {
+            return _icount;
+        }
+
+        public DrawElementsType IndexType()
+        {
+            return DrawElementsType.UnsignedShort;
+        }
+
         public static Mesh CreateTriangle(float w)
         {
             float x = w / 2;
@@ -167,37 +120,15 @@ namespace OpenTK_RenderEngine
             return new Mesh(vaoId, indices.Length);
         }
 
-
-        private int _vaoId;
-        private int _icount;
-
-        private Mesh(int vaoId, int icount)
-        {
-            _vaoId = vaoId;
-            _icount = icount;
-        }
-
-        public int GetVAOId()
-        {
-            return _vaoId;
-        }
-
-        public int IndexCount()
-        {
-            return _icount;
-        }
-
-        public DrawElementsType IndexType()
-        {
-            return DrawElementsType.UnsignedShort;
-        }
-
         public static Mesh FromObjFile(string file)
         {
             try
             {
                 List<Vector3> vertices = new List<Vector3>();
                 List<UInt16> indices = new List<UInt16>();
+
+                List<Vector2> texture_data = new List<Vector2>();
+                Vector2[] texture;
 
                 List<Vector3> normal_data = new List<Vector3>();
                 Vector3[] normal;
@@ -216,6 +147,8 @@ namespace OpenTK_RenderEngine
                         else if (line.StartsWith("vt ")) // texture coord of vertex
                         {
                             var f = line.Split(' ');
+                            var v = new Vector2(float.Parse(f[1]), float.Parse(f[2]));
+                            texture_data.Add(v);
                         }
                         else if (line.StartsWith("vn ")) // normal of vertex
                         {
@@ -229,6 +162,7 @@ namespace OpenTK_RenderEngine
                         }
                     }
 
+                    texture = new Vector2[vertices.Count];
                     normal = new Vector3[vertices.Count];
                     do
                     {
@@ -243,7 +177,7 @@ namespace OpenTK_RenderEngine
                                 indices.Add((UInt16)vertex_i);
                                 // texture data position
                                 int texture_i = int.Parse(v[1]) - 1;
-
+                                texture[vertex_i] = texture_data[texture_i];
                                 // normal data position
                                 int normal_i = int.Parse(v[2]) - 1;
                                 normal[vertex_i] += normal_data[normal_i];
@@ -253,7 +187,7 @@ namespace OpenTK_RenderEngine
                     while ((line = sr.ReadLine()) != null);
                 }
 
-                return CreateMesh(vertices.ToArray(), indices.ToArray(), normal);
+                return CreateMesh(vertices.ToArray(), indices.ToArray(), normal, texture);
             }
             catch (Exception e)
             {

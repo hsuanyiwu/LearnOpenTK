@@ -25,14 +25,28 @@ namespace OpenTK_RenderEngine
         static public void Draw(Entity entity)
         {
             Mesh mesh = entity.Mesh;
+            Texture texture = entity.Texture;
 
             // bind and enable
             GL.BindVertexArray(mesh.GetVAOId());
             GL.EnableVertexAttribArray((int)VAO_INDEX.VERTEX);
             GL.EnableVertexAttribArray((int)VAO_INDEX.NORMAL);
 
+            if(texture != null)
+            {
+                GL.EnableVertexAttribArray((int)VAO_INDEX.TEXTURE);
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(TextureTarget.Texture2D, texture.TextureId);
+            }
+
             // draw triangle
             GL.DrawElements(PrimitiveType.Triangles, mesh.IndexCount(), mesh.IndexType(), 0);
+
+
+            if (texture != null)
+            {
+                GL.DisableVertexAttribArray((int)VAO_INDEX.TEXTURE);
+            }
 
             // disable and unbind
             GL.DisableVertexAttribArray((int)VAO_INDEX.VERTEX);

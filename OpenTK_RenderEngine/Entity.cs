@@ -23,6 +23,12 @@ namespace OpenTK_RenderEngine
             set;
         }
 
+        public Texture Texture
+        {
+            get;
+            set;
+        }
+
         public Vector3 Position
         {
             get { return _position; }
